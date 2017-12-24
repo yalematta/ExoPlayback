@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">ExoPlayback</string>
+
+    <string name="play">Play</string>
+    <string name="pause">Pause</string>
+    <string name="restart">Restart</string>
+    <string name="guess">playmepodcast.com</string>
+    <string name="notification_text">Experiencing ExoPlayer</string>
+
+    <string name="essay_by_rose_napoli">https://playme.podbean.com/mf/play/dx5qsb/_53_-_PlayME_-_Essay_by_Rose_Napoli.mp3</string>
+</resources>
