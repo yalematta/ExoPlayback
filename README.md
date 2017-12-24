@@ -365,7 +365,80 @@ public static class MediaReceiver extends BroadcastReceiver {
 	}
 }
 ```
+### [_Migrating MediaStyle notifications to support Android O_](https://medium.com/google-developers/migrating-mediastyle-notifications-to-support-android-o-29c7edeca9b7)
 
+#### _Change your import statements_
+
+```
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.media.app.NotificationCompat.MediaStyle;
+```
+#### _You might have an import statement from v7, that you no longer need:_
+
+```
+import android.support.v7.app.NotificationCompat;
+```
+#### _In your build.gradle, you now only need to import the media-compat support library._
+
+```
+implementation ‘com.android.support:support-media-compat:26.+’
+```
+
+### _Use NotificationCompat with channels_
+#### The v4 support library now has a new constructor for creating notification builders:
+
+```
+NotificationCompat.Builder notificationBuilder =
+        new NotificationCompat.Builder(mContext, CHANNEL_ID);
+```
+#### The NotificationCompat class does not create a channel for you. You still have to create a channel yourself.
+
+```
+private static final String CHANNEL_ID = "media_playback_channel";
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private void createChannel() {
+        NotificationManager
+                mNotificationManager =
+                (NotificationManager) mContext
+                        .getSystemService(Context.NOTIFICATION_SERVICE);
+        // The id of the channel.
+        String id = CHANNEL_ID;
+        // The user-visible name of the channel.
+        CharSequence name = "Media playback";
+        // The user-visible description of the channel.
+        String description = "Media playback controls";
+        int importance = NotificationManager.IMPORTANCE_LOW;
+        NotificationChannel mChannel = new NotificationChannel(id, name, importance);
+        // Configure the notification channel.
+        mChannel.setDescription(description);
+        mChannel.setShowBadge(false);
+        mChannel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+        mNotificationManager.createNotificationChannel(mChannel);
+    }
+```
+
+#### _Here’s code that creates a MediaStyle notification with NotificationCompat._
+```
+// You only need to create the channel on API 26+ devices
+if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+  createChannel();
+}
+NotificationCompat.Builder notificationBuilder =
+       new NotificationCompat.Builder(mContext, CHANNEL_ID);
+notificationBuilder
+       .setContentTitle(getString(R.string.guess))
+                .setContentText(getString(R.string.notification_text))
+                .setContentIntent(contentPendingIntent)
+                .setSmallIcon(R.drawable.ic_music_note)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .addAction(restartAction)
+                .addAction(playPauseAction)
+                .setStyle(new MediaStyle()
+                        .setMediaSession(token)
+                        .setShowActionsInCompactView(0, 1));
+```
 ### _Android Media Framework Extras_
 #### Audio Focus
 
@@ -379,7 +452,7 @@ public static class MediaReceiver extends BroadcastReceiver {
 
 - Android uses separate audio streams for playing music, alarms, notifications, the incoming call ringer, system sounds, in-call volume, and DTMF tones. This allows users to control the volume of each stream independently.
 
-- By default, pressing the volume control modifies the volume of the active audio stream. If your app isn't currently playing anything, hitting the volume keys adjusts the ringer volume. To ensure that volume controls adjust the correct stream, you should call [setVolumeControlStream()](https://developer.android.com/reference/android/app/Activity.html#setVolumeControlStream(int) passing in [AudioManager.STREAM_MUSIC](https://developer.android.com/reference/android/media/AudioManager.html#STREAM_MUSIC).
+- By default, pressing the volume control modifies the volume of the active audio stream. If your app isn't currently playing anything, hitting the volume keys adjusts the ringer volume. To ensure that volume controls adjust the correct stream, you should call [setVolumeControlStream()](https://developer.android.com/reference/android/app/Activity.html#setVolumeControlStream(int)) passing in [AudioManager.STREAM_MUSIC](https://developer.android.com/reference/android/media/AudioManager.html#STREAM_MUSIC).
 
 ### _ExoPlayer Extras_
 
